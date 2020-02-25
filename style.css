@@ -1,0 +1,24 @@
+#map {
+    height: 500px;
+    position: relative;
+    overflow: hidden;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.google-visualization-table-div-page .gradient,
+.google-visualization-table-table .gradient {
+    padding: 15px 8px;
+}
+
+.google-visualization-table-table .gradient,
+.google-visualization-table-div-page .gradient {
+    background: #f0f0f0 !important;
+    color: #4b4a4d;
+    font-size: 14px;
+}
