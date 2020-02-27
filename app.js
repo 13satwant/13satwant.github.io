@@ -1,3 +1,5 @@
+
+
 var config = {
   apiKey: "AIzaSyBB6JyfIq0QO-W3JE6mqaHJoi8CQdBX1Ew",
   authDomain: "njt-notjusttourists.firebaseapp.com",
@@ -33,7 +35,7 @@ var firestore = firebase.firestore();
 let items = [];
 let country = new Set();
 let city = new Set();
-let locality = [];
+let locality = new Set();
 let markers = [];
 let wholeCollection = firestore.collection("ClinicCollection");
 
@@ -49,21 +51,50 @@ google.charts.setOnLoadCallback(drawDashboard);
 
 function drawDashboard() {
   // Everything is loaded. Assemble your dashboard...
-  debugger
-  var countrySelect = document.getElementById('country-select');
-  // var data = Array.from(country);
-  // data.forEach((value,key) => {});
+  let countrySelect = jQuery('#country-select-menu');
+  Array.from(country).forEach(value => {
+    countrySelect.append('<div class="select-menu-item" data-value="' + value + '">' + value + '</div>');
+  })
 
-  var programmaticSlider = new google.visualization.ControlWrapper({
-    'controlType': 'CategoryFilter',
-    'containerId': 'countryselect',
-    'options': {
-      'filterColumnLabel': 'Donuts eaten',
-      'ui': {'labelStacking': 'vertical'}
-    }
+  let citySelect = jQuery('#city-select-menu');
+  Array.from(city).forEach(value => {
+    citySelect.append('<div>' + value + '</div>');
+  })
+
+  let localitySelect = jQuery('#locality-select-menu');
+  Array.from(locality).forEach(value => {
+    localitySelect.append('<div>' + value + '</div>');
+  })
+}
+
+function openMenu(filter) {
+  debugger
+  switch (filter) {
+    case 'country':
+      jQuery('#country-select-menu').toggle();
+
+      break;
+    case 'city':
+      jQuery('#city-select-menu').toggle();
+      break;
+    case 'locality':
+      jQuery('#locality-select-menu').toggle();
+      break;
+
+    default:
+      break;
+  }
+}
+
+function filterCountry(e) {
+  var test = e.target.innerHTML;
+  items = [];
+  wholeCollection.where("country", "==", test).get().then((snapshot) => {
+    snapshot.docs.forEach(doc => {
+      items.push(doc.data());
+    })
   });
-  programmaticSlider.draw(data);
-  console.log(data);
+  console.log(items);
 }
 
 const getRealtimeUpdate = () => {
@@ -77,12 +108,13 @@ const getRealtimeUpdate = () => {
 
 function initMap() {
   var map = new google.maps.Map(document.getElementById('map'), mapOptions);
-  debugger
+
   wholeCollection.get().then((snapshot) => {
     snapshot.docs.forEach(doc => {
       items.push(doc.data());
       country.add(doc.data().country);
       city.add(doc.data().city);
+      locality.add(doc.data().locality);
       var lon = parseInt(doc.data().coords.split(",")[0]);
       var lat = parseInt(doc.data().coords.split(",")[1]);
       var myLatlng = new google.maps.LatLng(lon, lat);
@@ -91,7 +123,6 @@ function initMap() {
         position: myLatlng,
         map: map
       });
-
       var infowindow = new google.maps.InfoWindow({
         content:
           '<table class="clinicAddr">' +
@@ -122,18 +153,22 @@ function initMap() {
           + '</tr>'
           + '</tbody>'
           + '</table>'
-      });
+      }, false);
 
       marker.addListener('click', () => {
+        debugger
         infowindow.open(marker.get('map'), marker);
+
+        mark = this;
       });
+
 
       markers.push(marker);
       marker.setMap(map);
     },
     );
     var markerCluster = new MarkerClusterer(map, markers, { imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m' });
-
+    console.log(items);
     drawTable();
     drawDashboard();
   });
