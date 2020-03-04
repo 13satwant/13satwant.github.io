@@ -23,18 +23,18 @@
             <div class="col-xl-3 filter" id="country-select">
                 <div class="title" onclick="openMenu('country');">Country/Territory<div class="plus-icon">+</div>
                 </div>
-                <div class="select-menu" id="country-select-menu" onclick="filterCountry(event);"></div>
+                <div class="select-menu" id="country-select-menu" onclick="filter('country',event);"></div>
             </div>
             <div class="col-xl-3 filter" id="city-select">
                 <div class="title" onclick="openMenu('city');">City<div class="plus-icon">+</div>
                 </div>
 
-                <div class="select-menu" id="city-select-menu"></div>
+                <div class="select-menu" id="city-select-menu" onclick="filter('city',event)"></div>
             </div>
             <div class="col-xl-3 filter" id="locality-select">
                 <div class="title" onclick="openMenu('locality');">Locality<div class="plus-icon">+</div>
                 </div>
-                <div class="select-menu" id="locality-select-menu"></div>
+                <div class="select-menu" id="locality-select-menu" onclick="filter('locality',event)"></div>
             </div>
         </div>
         <div id="map"></div>

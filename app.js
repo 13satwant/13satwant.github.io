@@ -31,8 +31,9 @@ firebase.initializeApp(config);
 
 var firestore = firebase.firestore();
 
-
+var map;
 let items = [];
+let filteredItems = [];
 let country = new Set();
 let city = new Set();
 let locality = new Set();
@@ -46,10 +47,8 @@ let localitySelected = [];
 
 
 google.charts.load('current', { 'packages': ['corechart', 'controls', 'table'] });
-google.charts.setOnLoadCallback(drawTable);
-google.charts.setOnLoadCallback(drawDashboard);
 
-function drawDashboard() {
+function drawMenu() {
   // Everything is loaded. Assemble your dashboard...
   let countrySelect = jQuery('#country-select-menu');
   Array.from(country).forEach(value => {
@@ -72,13 +71,19 @@ function openMenu(filter) {
   switch (filter) {
     case 'country':
       jQuery('#country-select-menu').toggle();
+      jQuery('#city-select-menu').hide();
+      jQuery('#locality-select-menu').hide();
 
       break;
     case 'city':
       jQuery('#city-select-menu').toggle();
+      jQuery('#country-select-menu').hide();
+      jQuery('#locality-select-menu').hide();
       break;
     case 'locality':
       jQuery('#locality-select-menu').toggle();
+      jQuery('#country-select-menu').hide();
+      jQuery('#city-select-menu').hide();
       break;
 
     default:
@@ -86,29 +91,43 @@ function openMenu(filter) {
   }
 }
 
-function filterCountry(e) {
+async function filter(menu,e) {
   var test = e.target.innerHTML;
-  items = [];
-  wholeCollection.where("country", "==", test).get().then((snapshot) => {
+  switch (menu){
+    case 'country':
+      countrySelected.push(test);
+      jQuery('#country-select').append(test);
+      jQuery('#country-select-menu').toggle();
+
+      break;
+    case 'city':
+      citySelected.push(test);
+      break;
+    case 'locality':
+      localitySelected.push(test);
+      break;
+
+    default:
+      break;
+  }
+  await wholeCollection.where(menu, "==", test).get().then((snapshot) => {
     snapshot.docs.forEach(doc => {
-      items.push(doc.data());
-    })
+      filteredItems.push(doc.data());
+    });
   });
-  console.log(items);
+  drawTable(filteredItems);
 }
 
 const getRealtimeUpdate = () => {
   wholeCollection.onSnapshot((doc) => {
     if (doc && doc.exists) {
       items.push(doc.data());
-
     }
   });
+  drawTable(items);
 }
 
-function initMap() {
-  var map = new google.maps.Map(document.getElementById('map'), mapOptions);
-
+function fetchData(){
   wholeCollection.get().then((snapshot) => {
     snapshot.docs.forEach(doc => {
       items.push(doc.data());
@@ -158,24 +177,25 @@ function initMap() {
       marker.addListener('click', () => {
         debugger
         infowindow.open(marker.get('map'), marker);
-
         mark = this;
       });
-
-
       markers.push(marker);
       marker.setMap(map);
     },
     );
     var markerCluster = new MarkerClusterer(map, markers, { imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m' });
     console.log(items);
-    drawTable();
-    drawDashboard();
+    drawTable(items);
+    drawMenu();
   });
 }
 
+function initMap() {
+  map = new google.maps.Map(document.getElementById('map'), mapOptions); 
+}
 
-function drawTable() {
+
+function drawTable(tableData) {
   var data = new google.visualization.DataTable();
   data.addColumn('string', 'Country/Territory');
   data.addColumn('string', 'City');
@@ -184,8 +204,8 @@ function drawTable() {
   data.addColumn('string', 'Adress');
   data.addColumn('string', 'Phone');
   data.addColumn('string', 'Size');
-
-  items.forEach((value, key) => {
+  debugger
+  tableData.forEach((value, key) => {
     data.addRows([
       [value.country.toString(), value.city.toString(), value.locality.toString(), value.clinic_name.toString(), value.full_address.toString(), value.phone.toString(), value.size.toString()]
     ]);
@@ -195,4 +215,5 @@ function drawTable() {
   table.draw(data, { showRowNumber: false, page: 'enabled', pageSize: 15, width: '100%', height: '100%', pagingButtons: 'prev' && 'next' });
 }
 
-getRealtimeUpdate();
+fetchData();
+//getRealtimeUpdate();
