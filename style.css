@@ -47,6 +47,21 @@ body {
     outline: none;
 }
 
+.country-name{
+    display: flex;
+    width: 100%;
+    height: auto !important;
+    padding: .2em;
+    margin: 0;
+    box-sizing: border-box;
+    vertical-align: middle;
+    line-height: 1.3em !important;
+    color: #4b4a4d;
+    background-color: #F5F5F5;
+    border: 1px solid #DDD;
+    border-radius: 2px;
+}
+
 #filters{
     position: relative;
     width: 100%;
