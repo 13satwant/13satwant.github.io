@@ -229,6 +229,9 @@ function fetchData(listener){
             },
         );
         let markerCluster = new MarkerClusterer(map, markers, { imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m' });
+        country = Array.from(country).sort();
+        city = Array.from(city).sort();
+        locality = Array.from(locality).sort();
         console.log(items);
         drawTable(items);
         drawMenu();
@@ -259,7 +262,11 @@ function drawTable(tableData) {
     table = new google.visualization.Table(document.getElementById('fulltable'));
     debugger
 
-    table.draw(data, { showRowNumber: false, page: 'enabled', pageSize: 15, width: '100%', height: '100%', pagingButtons: 'prev' && 'next' });
+    table.draw(data, { showRowNumber: false, page: 'event', pageSize: 15, width: '100%', height: '100%', pagingButtons: 'both'});
+    google.visualization.events.addListener(table, 'page', function(e){
+
+        console.log(e);
+      });
 
 }
 
