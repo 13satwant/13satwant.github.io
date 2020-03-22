@@ -80,6 +80,7 @@ body {
     padding: 3px 8px;
     vertical-align: middle;
     margin-right: 20px;
+    width: 100%
 }
 
 .filter .title .plus-icon{
@@ -103,4 +104,53 @@ body {
     background-color: #f0f0f0 !important;
     border-color: #f0f0f0 !important;
     color: #4b4a4d !important;
+}
+.page-number {
+    float: left;
+    font-weight: bolder
+}
+.goog-custom-button-collapse-right, .goog-custom-button-collapse-left {
+    font-size: 20px!important;
+    font-weight: bolder!important;
+    position: absolute!important;
+}
+.goog-custom-button-collapse-right {
+    right: 27px;
+}
+.goog-custom-button-collapse-left {
+    right: 10px;
+}
+.google-visualization-table-div-page {
+    padding: 15px 8px!important;
+}
+.slider-button {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.slick-number {
+    font-size: 25px;
+    font-weight: bolder;
+    margin: 0;
+}
+.slick-next {
+    font-size: 25px;
+    font-weight: bolder;
+    transition-duration: .3s;
+    margin-right: 10px;
+    cursor: pointer;
+}
+.slick-prev {
+    font-size: 25px;
+    font-weight: bolder;
+    transition-duration: .3s;
+    margin-left: 10px;
+    cursor: pointer;
+}
+.slick-next:hover, .slick-prev:hover {
+    transform: scale(1.2);
+}
+.table {
+    display: none
 }
