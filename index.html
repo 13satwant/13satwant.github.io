@@ -3,6 +3,7 @@
 <title>List Of Clinics For Delivery</title>
 
 <link rel="stylesheet" type="text/css" href="assets/css/bootstrap-grid.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" type="text/css" href="style.css">
 <head>
 
@@ -23,7 +24,11 @@
             <div class="title" onclick="openMenu('country');">Country/Territory<div class="plus-icon">+</div>
             </div>
             <div class="select-menu" id="country-select-menu" onclick="filter('country',event);"></div>
-            <div class="added"></div>
+            <div class="added">
+                <div class="loading">
+                    <i class="fa fa-spinner fa-spin" style="font-size:24px"></i>
+                </div>
+            </div>
         </div>
         <div class="col-xl-3 filter" id="city-select">
             <div class="title" onclick="openMenu('city');">City<div class="plus-icon">+</div>
@@ -52,7 +57,8 @@
 <script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-app.js"></script>
 
 <!-- TODO: Add SDKs for Firebase products that you want to use https://firebase.google.com/docs/web/setup#available-libraries -->
-<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script> -->
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script> --><!-- 
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script> -->
 <script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-analytics.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-auth.js"></script>

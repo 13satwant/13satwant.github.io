@@ -154,3 +154,10 @@ body {
 .table {
     display: none
 }
+.loading {
+    position: absolute;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.3);
+}

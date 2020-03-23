@@ -45,6 +45,7 @@ let table;
 let queryFilter;
 let oldMarker;
 let sliderNum = 0;
+var lenght_i = 0;
 
 let countrySelected = [];
 let citySelected = [];
@@ -65,14 +66,24 @@ function drawMenu() {
     let countrySelect = jQuery('#country-select-menu');
     Array.from(country).forEach(value => {
         wholeCollection.where('country', "==", value).get().then((snapshot) => {
-            countrySelect.append('<div class="select-menu-item" data-value="' + value + '">' + value + '(' + snapshot.docs.length + ') </div>');
+            var class_name = '.' + value.split(/\W+/).join("_");
+            if(class_name == '.'){
+                class_name = '.none'
+            }
+            countrySelect.children(class_name).remove();
+            countrySelect.append('<div class="select-menu-item ' + class_name.split('.')[1] +'" data-value="' + value + '">' + value + '(' + snapshot.docs.length + ') </div>');
         })
     })
 
     let citySelect = jQuery('#city-select-menu');
     Array.from(city).forEach(value => {
         wholeCollection.where('city', "==", value).get().then((snapshot) => {
-            citySelect.append('<div class="select-menu-item" data-value="' + value + '">' + value + '(' + snapshot.docs.length + ') </div>');
+            var class_name = '.' + value.split(/\W+/).join("_");
+            if(class_name == '.'){
+                class_name = '.none'
+            }
+            citySelect.children(class_name).remove();
+            citySelect.append('<div class="select-menu-item ' + class_name.split('.')[1] +'" data-value="' + value + '">' + value + '(' + snapshot.docs.length + ') </div>');
         })
     })
 
@@ -106,13 +117,55 @@ function openMenu(filter) {
     }
 }
 
+async function removeTag(flg, title) {
+    cleanMenu();
+    countrySelected = countrySelected.filter( e=> e !== title);
+    if(flg == 'country'){
+        jQuery('#city-select-menu').next().children().remove();
+        jQuery('#locality-select-menu').next().children().remove();
+    }
+    if(flg == 'city'){
+        jQuery('#locality-select-menu').next().children().remove();
+    }
+    if(countrySelected.length == 0){
+        queryFilter = wholeCollection;
+    }else if(countrySelected.length == 1){
+        queryFilter = wholeCollection.where('country', "==", countrySelected[0]);
+    }else if(countrySelected.length > 1){
+        queryFilter = wholeCollection.where('country', "in", countrySelected);
+    }
+    city = new Set();
+    locality = new Set();
+    filteredItems = [];
+    await queryFilter.get().then((snapshot) => {
+        snapshot.docs.forEach(doc => {
+            filteredItems.push(doc.data());
+            city.add(doc.data().city);
+            locality.add(doc.data().locality);
+        });
+        jQuery('.loading').css('display', 'none');
+    });
+    var location = [];
+    for(var i = 0; i < filteredItems.length; i++){
+        let lon = parseInt(filteredItems[i].coords.split(",")[0]);
+        let lat = parseInt(filteredItems[i].coords.split(",")[1]);
 
+        if(!isNaN(lon) && !isNaN(lat)){
+            location.push({name: filteredItems[i].city, latlng: new google.maps.LatLng(lon, lat)})
+        }
+    }
+    BoundChange(location);
+    drawTable(filteredItems);
+
+    drawMenu();
+}
 async function filter(menu, e) {
     let itemTitle = e.target.dataset.value;
+    cleanMenu();
     switch (menu){
         case 'country':
             countrySelected.push(itemTitle);
-            jQuery('#country-select .added').append("<div class='country-name' data-value='"+itemTitle+"' ><span data-value='"+itemTitle+"' data-type='country'>&#10006</span>"+itemTitle+ "</div>");
+            jQuery('#country-select .added').append('<div class="country-name"><span onclick="removeTag(\'country\', \''+itemTitle+'\')">&#10006</span>'+itemTitle+'</div>');
             jQuery('#country-select-menu').toggle();
 
             if(countrySelected.length == 0){
@@ -125,7 +178,7 @@ async function filter(menu, e) {
             break;
         case 'city':
             citySelected.push(itemTitle);
-            jQuery('#city-select .added').append("<div class='country-name' data-value='"+itemTitle+"' ><span data-value='"+itemTitle+"' data-type='city'>&#10006</span>"+itemTitle+ "</div>");
+            jQuery('#city-select .added').append('<div class="country-name"><span onclick="removeTag(\'city\', \''+itemTitle+'\')">&#10006</span>'+itemTitle+'</div>');
             jQuery('#city-select-menu').toggle();
             if(citySelected.length==1){
                 queryFilter = wholeCollection.where('city', "==", citySelected[0]);
@@ -162,57 +215,20 @@ async function filter(menu, e) {
     for(var i = 0; i < filteredItems.length; i++){
         let lon = parseInt(filteredItems[i].coords.split(",")[0]);
         let lat = parseInt(filteredItems[i].coords.split(",")[1]);
-        
+
         if(!isNaN(lon) && !isNaN(lat)){
             location.push({name: filteredItems[i].city, latlng: new google.maps.LatLng(lon, lat)})
         }
     }
-    jQuery('.country-name span').on('click',async function () {
-        let itemName = jQuery(this).data('value');
-        countrySelected = countrySelected.filter( e=> e !== itemName);
-        if(jQuery(this).data('type') == 'country'){
-            jQuery('#city-select-menu').next().children().remove();
-            jQuery('#locality-select-menu').next().children().remove();
-        }
-        if(jQuery(this).data('type') == 'city'){
-            jQuery('#locality-select-menu').next().children().remove();
-        }
+    jQuery('.country-name span').on('click',function () {
         jQuery(this).parent().remove();
-        
-        if(countrySelected.length == 0){
-            queryFilter = wholeCollection;
-        }else if(countrySelected.length == 1){
-            queryFilter = wholeCollection.where('country', "==", countrySelected[0]);
-        }else if(countrySelected.length > 1){
-            queryFilter = wholeCollection.where('country', "in", countrySelected);
-        }
-        city = new Set();
-        locality = new Set();
-        filteredItems = [];
-        await queryFilter.get().then((snapshot) => {
-            snapshot.docs.forEach(doc => {
-                filteredItems.push(doc.data());
-                city.add(doc.data().city);
-                locality.add(doc.data().locality);
-            });
-        });
-        var location = [];
-        for(var i = 0; i < filteredItems.length; i++){
-            let lon = parseInt(filteredItems[i].coords.split(",")[0]);
-            let lat = parseInt(filteredItems[i].coords.split(",")[1]);
-            
-            if(!isNaN(lon) && !isNaN(lat)){
-                location.push({name: filteredItems[i].city, latlng: new google.maps.LatLng(lon, lat)})
-            }
-        }
-        BoundChange(location);
-        drawTable(filteredItems);
-        cleanMenu();
-        drawMenu();
+        jQuery('.loading').css('display', 'flex');
+        jQuery('.loading').width(jQuery('#country-select-menu').next('.added').width());
+        jQuery('.loading').height(jQuery('#country-select-menu').next('.added').height());
     });
     BoundChange(location);
     drawTable(filteredItems);
-    cleanMenu();
+
     drawMenu();
 }
 
@@ -227,6 +243,9 @@ const getRealtimeUpdate = () => {
 }
 
 function fetchData(listener){
+    var infoWindow = new google.maps.InfoWindow({
+        content : '',
+    });
     wholeCollection.get().then((snapshot) => {
         snapshot.docs.forEach(doc => {
                 items.push(doc.data());
@@ -242,9 +261,7 @@ function fetchData(listener){
                     title: JSON.stringify(doc.data()),
                     map: map
                 });
-                let infowindow = new google.maps.InfoWindow({
-                    content:
-                        '<table class="clinicAddr">'
+                content1 = '<table class="clinicAddr">'
                         +'<tbody>'
                         + '<tr class="tableRow">'
                         + '<td class="infos"><b>Clinic</b></td>'
@@ -272,21 +289,23 @@ function fetchData(listener){
                         + '</tr>'
                         + '</tbody>'
                         + '</table>'
-                }, false);
-                
+
                 marker.addListener('click', () => {
                     sliderNum = 0;
-                    infowindow.open(marker.get('map'), marker);
+                    infoWindow.close();
+                    infoWindow.setContent(content1);
+                    infoWindow.open(marker.get('map'), marker);
+
                     mark = this;
                 });
                 markers.push(marker);
                 marker.setMap(map);
             },
         );
-        let markerCluster = new MarkerClusterer(map, markers, { imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',averageCenter: false });
+        let markerCluster = new MarkerClusterer(map, markers, { imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m', zoomOnClick: false});
         // var markerCluster = new MarkerClusterer(map, markers, {
         //   averageCenter: false
-        // });        
+        // });
         markerCluster.addListener('click', (cluster, event) => {
             sliderNum = 0;
             var flg = false;
@@ -294,12 +313,12 @@ function fetchData(listener){
             let lat = parseInt(JSON.parse(cluster.markers_[0].title).coords.split(",")[1]);
             var prevMark = lon+", "+lat;
             var i = 0;
-            var lenght_i = cluster.markers_.length
+            lenght_i = cluster.markers_.length
             var content = '<div class="slider">';
             content += '<div class="slider-button">'
-                    + '<div class="slick-next">&#10094</div>'
+                    + '<div class="slick-next" onclick="prevPg()">&#10094</div>'
                     + '<p class="slick-number">' + (sliderNum+1) + " / " + cluster.markers_.length + '</p>'
-                    + '<div class="slick-prev">&#10095</div>'
+                    + '<div class="slick-prev" onclick="nextPg()">&#10095</div>'
                     + '</div>'
             for (i; i < cluster.markers_.length; i++) {
                 var markerdata = JSON.parse(cluster.markers_[i].title);
@@ -340,39 +359,23 @@ function fetchData(listener){
             }
             content += "</div>";
             // var compiled = $compile(content)($scope);
-            var infoWindow = new google.maps.InfoWindow({
-                content : content,
-                position : cluster.getCenter()
-            });
+
             if(!flg){
+                infoWindow.close();
+                infoWindow.setContent(content);
+                infoWindow.setPosition(cluster.getCenter());
                 infoWindow.open(map);
                 google.maps.event.addListener(infoWindow,'domready',function() {
                     var t = jQuery('.table');
-                    t[0].style.display = 'block'
-                    jQuery('.slick-prev').click(function(){
-
-                        if(sliderNum < lenght_i-1){
-                            t[sliderNum].style.display = 'none';
-                            sliderNum++;
-                            t[sliderNum].style.display = 'block';
-                            jQuery('.slick-number').text((sliderNum+1) + " / " + lenght_i)
-                        }
-                        
-                    })
-                    jQuery('.slick-next').click(function(){
-
-                        if(sliderNum > 0){
-                            console.log(sliderNum, lenght_i)
-                            t[sliderNum].style.display = 'none';
-                            sliderNum--;
-                            t[sliderNum].style.display = 'block';
-                            jQuery('.slick-number').text((sliderNum+1) + " / " + lenght_i)
-                        }
-                        
-                    })
+                    if(t[0] !== undefined){
+                        t[0].style.display = 'block'
+                    }
                 });
             }
-            
+            else {
+                map.fitBounds(cluster.getBounds())
+            }
+
         });
         country = Array.from(country).sort();
         city = Array.from(city).sort();
@@ -384,6 +387,25 @@ function fetchData(listener){
     });
 }
 
+function nextPg(){
+    var t = jQuery('.table');
+    if(sliderNum < lenght_i-1){
+        t[sliderNum].style.display = 'none';
+        sliderNum++;
+        t[sliderNum].style.display = 'block';
+        jQuery('.slick-number').text((sliderNum+1) + " / " + lenght_i)
+    }
+}
+function prevPg(){
+    var t = jQuery('.table');
+    if(sliderNum > 0){
+        t[sliderNum].style.display = 'none';
+        sliderNum--;
+        t[sliderNum].style.display = 'block';
+        jQuery('.slick-number').text((sliderNum+1) + " / " + lenght_i)
+    }
+
+}
 function initMap() {
     map = new google.maps.Map(document.getElementById('map'), mapOptions);
 }
@@ -453,7 +475,7 @@ function drawTable(tableData) {
             {id: 'city', label: 'City', type: 'string'},
             {id: 'locality', label: 'Locality', type: 'string'},
             {id: 'clinic_name', label: 'Clinic name', type: 'string'},
-            {id: 'address', label: 'Adress', type: 'string'},
+            {id: 'address', label: 'Address', type: 'string'},
             {id: 'phone', label: 'Phone', type: 'string'},
             {id: 'size', label: 'Size', type: 'string'},
         ],
@@ -465,10 +487,10 @@ function drawTable(tableData) {
     })
     table = new google.visualization.Table(document.getElementById('fulltable'));
 
-    table.draw(data, { 
-        page: 'event', 
-        pageSize: 15, 
-        width: '100%', 
+    table.draw(data, {
+        page: 'event',
+        pageSize: 15,
+        width: '100%',
         height: '100%',
         pagingSymbols: {
             prev: '<',
@@ -487,7 +509,7 @@ function drawTable(tableData) {
         text = (pageNumber-1)*15+1+" - "+filteredItems.length+" / "+filteredItems.length;
     }
     jQuery('.google-visualization-table-div-page').append("<div class='page-number' >"+text+ "</div>");
-    
+
 }
 function myPageEventHandler(e) {
     pageNumber = parseInt(e['page'])+1;
