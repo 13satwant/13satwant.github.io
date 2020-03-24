@@ -149,14 +149,14 @@ async function removeTag(flg, title) {
     for(var i = 0; i < filteredItems.length; i++){
         let lon = parseInt(filteredItems[i].coords.split(",")[0]);
         let lat = parseInt(filteredItems[i].coords.split(",")[1]);
-
+        
         if(!isNaN(lon) && !isNaN(lat)){
             location.push({name: filteredItems[i].city, latlng: new google.maps.LatLng(lon, lat)})
         }
     }
     BoundChange(location);
     drawTable(filteredItems);
-
+    
     drawMenu();
 }
 async function filter(menu, e) {
@@ -215,7 +215,7 @@ async function filter(menu, e) {
     for(var i = 0; i < filteredItems.length; i++){
         let lon = parseInt(filteredItems[i].coords.split(",")[0]);
         let lat = parseInt(filteredItems[i].coords.split(",")[1]);
-
+        
         if(!isNaN(lon) && !isNaN(lat)){
             location.push({name: filteredItems[i].city, latlng: new google.maps.LatLng(lon, lat)})
         }
@@ -228,7 +228,7 @@ async function filter(menu, e) {
     });
     BoundChange(location);
     drawTable(filteredItems);
-
+    
     drawMenu();
 }
 
@@ -289,7 +289,7 @@ function fetchData(listener){
                         + '</tr>'
                         + '</tbody>'
                         + '</table>'
-
+                
                 marker.addListener('click', () => {
                     sliderNum = 0;
                     infoWindow.close();
@@ -359,7 +359,7 @@ function fetchData(listener){
             }
             content += "</div>";
             // var compiled = $compile(content)($scope);
-
+            
             if(!flg){
                 infoWindow.close();
                 infoWindow.setContent(content);
@@ -375,7 +375,7 @@ function fetchData(listener){
             else {
                 map.fitBounds(cluster.getBounds())
             }
-
+            
         });
         country = Array.from(country).sort();
         city = Array.from(city).sort();
@@ -404,7 +404,7 @@ function prevPg(){
         t[sliderNum].style.display = 'block';
         jQuery('.slick-number').text((sliderNum+1) + " / " + lenght_i)
     }
-
+    
 }
 function initMap() {
     map = new google.maps.Map(document.getElementById('map'), mapOptions);
@@ -475,7 +475,7 @@ function drawTable(tableData) {
             {id: 'city', label: 'City', type: 'string'},
             {id: 'locality', label: 'Locality', type: 'string'},
             {id: 'clinic_name', label: 'Clinic name', type: 'string'},
-            {id: 'address', label: 'Address', type: 'string'},
+            {id: 'address', label: 'Adress', type: 'string'},
             {id: 'phone', label: 'Phone', type: 'string'},
             {id: 'size', label: 'Size', type: 'string'},
         ],
@@ -487,10 +487,10 @@ function drawTable(tableData) {
     })
     table = new google.visualization.Table(document.getElementById('fulltable'));
 
-    table.draw(data, {
-        page: 'event',
-        pageSize: 15,
-        width: '100%',
+    table.draw(data, { 
+        page: 'event', 
+        pageSize: 15, 
+        width: '100%', 
         height: '100%',
         pagingSymbols: {
             prev: '<',
@@ -509,7 +509,7 @@ function drawTable(tableData) {
         text = (pageNumber-1)*15+1+" - "+filteredItems.length+" / "+filteredItems.length;
     }
     jQuery('.google-visualization-table-div-page').append("<div class='page-number' >"+text+ "</div>");
-
+    
 }
 function myPageEventHandler(e) {
     pageNumber = parseInt(e['page'])+1;
